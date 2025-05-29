@@ -62,3 +62,23 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
+
+      # Slack으로 결과 전송
+      - name: Send Slack Notification
+        if: always() # Send notification regardless of build success or failure
+        uses: act10ns/slack@v2.1.0
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }} # Replace with your Slack webhook URL secret
+          status: ${{ job.status }}
+          message: |
+            *GitHub Actions Workflow Status:*
+            *Repository:* `${{ github.repository }}`
+            *Branch:* `${{ github.ref_name }}`
+            *Commit:* `${{ github.sha }}`
+            *Workflow:* `${{ github.workflow }}`
+            *Run ID:* `${{ github.run_id }}`
+            *Status:* `${{ job.status }}`
+            *Link:* `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`
+          # You can customize the message further with more details
+          # For example, if you want to show the Docker image tags:
+          # `*Docker Image Tags:* ${{ steps.meta.outputs.tags }}`
